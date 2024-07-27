@@ -1,0 +1,76 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl= env("DIRECT_URL")
+}
+model User {
+  id        Int     @id @unique @default(autoincrement())
+  firstName String?
+  lastName  String?
+  email     String @unique
+  password  String
+}
+
+model Hap {
+  id        String @id @unique @default(uuid())
+  triggerId String?
+  metadata  Json
+  trigger   Trigger?
+  actions   Action[]
+  hapRuns   HapRun[]
+}
+
+model Trigger {
+  id                 String @id @unique @default(uuid())
+  hapId              String @unique
+  triggerType        Int
+  metadata           Json
+  type               AvailableTrigger @relation(fields: [triggerType], references: [id])
+  hap                Hap @relation(fields: [hapId], references: [id])
+}
+
+model Action {
+  id                String          @id @unique @default(uuid())
+  hapId             String
+  metadata          Json
+  actionType        Int
+  order             Int
+  type              AvailableAction @relation(fields: [actionType], references: [id])
+  hap               Hap @relation(fields: [hapId], references: [id])
+}
+
+model AvailableAction {
+  id         Int      @id @unique @default(autoincrement())
+  actionName String
+  Action     Action[]
+}
+
+model AvailableTrigger {
+  id          Int       @id @unique @default(autoincrement())
+  triggerName String
+  Trigger     Trigger[]
+}
+
+model HapRun {
+  id          String   @id @unique @default(cuid())
+  createdDate DateTime @default(now())
+  hapId       String
+  hap         Hap @relation(fields: [hapId], references: [id])
+  hapRunOut   HapRunOutbox[]
+}
+
+model HapRunOutbox {
+  id          String @id @default(uuid())
+  hapRunId    String @unique
+  hapRun      HapRun @relation(fields: [hapRunId], references: [id])
+}

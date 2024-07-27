@@ -1,0 +1,16 @@
+meta {
+  name: webhook
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://localhost:3001/api/webhooks/:userId/:hapId
+  body: none
+  auth: none
+}
+
+params:path {
+  userId: 1234567
+  hapId: 09876
+}
